@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website').controller('CustomControlController', function() {
+angular.module('jsonforms-examples.customcontroller',[]).controller('CustomControlController', function() {
     var vm = this;
     vm.schema = {
         "type": "object",

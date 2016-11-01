@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website')
+angular.module('jsonforms-examples.layoutscontroller',[])
     .controller('LayoutsController', function() {
 
         var vm = this;

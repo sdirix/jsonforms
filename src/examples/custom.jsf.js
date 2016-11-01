@@ -10,8 +10,8 @@ function customDirective() {
     }
 }
 
-var app = angular.module('jsonforms-website');
-app.directive('customControl', customDirective)
+var app = angular.module('jsonforms-examples.customcontrol',[]);
+app.directive('customControl', customDirective);
 app.run(['RendererService', 'JSONFormsTesters', function(RendererService, JSONFormsTesters) {
     RendererService.register(
         "custom-control",

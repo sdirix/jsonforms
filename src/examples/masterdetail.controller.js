@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website')
+angular.module('jsonforms-examples.masterdetailcontroller',[])
     .controller('MasterDetailController', function() {
 
         var vm = this;

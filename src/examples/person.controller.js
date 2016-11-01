@@ -81,7 +81,7 @@ var userDetailSchema = {
         }
     ]
 };
-var app = angular.module('jsonforms-website');
+var app = angular.module('jsonforms-examples.personcontroller',[]);
 
 app.run(['UiSchemaRegistry', function(UiSchemaRegistry) {
     UiSchemaRegistry.register(userDetailSchema, function (schema){
@@ -90,7 +90,7 @@ app.run(['UiSchemaRegistry', function(UiSchemaRegistry) {
         return 1;
     });
 }]);
-angular.module('jsonforms-website').controller('PersonController', function() {
+angular.module('jsonforms-examples.personcontroller').controller('PersonController', function() {
     var vm = this;
     vm.schema = {
         "type": "object",

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website')
+angular.module('jsonforms-examples.remoterefcontroller',[])
     .controller('RemoteRefController', function() {
         var vm = this;
         vm.schema = {

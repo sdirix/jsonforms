@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website')
+angular.module('jsonforms-examples.categoriescontroller',[])
     .controller('CategoriesController', function() {
 
         var vm = this;

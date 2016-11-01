@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('jsonforms-website')
+angular.module('jsonforms-examples.rulecontroller',[])
     .controller('RuleController', function() {
 
         var vm = this;

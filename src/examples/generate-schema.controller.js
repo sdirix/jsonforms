@@ -1,4 +1,6 @@
-angular.module('jsonforms-website')
+'use strict';
+
+angular.module('jsonforms-examples.generateschemacontroller',[])
     .controller('GenerateSchemaController', function() {
 
         var vm = this;
