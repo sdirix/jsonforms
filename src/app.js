@@ -533,7 +533,6 @@ angular.module('jsonforms-website', [
 }])
 
 // Our code
-require('./listing/listing.controller');
 require('./listing/listing.directive');
 require('./docs/uischema/uischema.controller');
 require('./docs/customrenderer/rating.control');
