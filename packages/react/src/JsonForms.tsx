@@ -37,19 +37,23 @@ class JsonFormsDispatchRenderer extends React.Component<JsonFormsProps, { id: st
 
   constructor(props) {
     super(props);
-    if (this.isManageOwnID()) {
+    if (this.isManageOwnID(props)) {
       this.state = {
-        id: createId(props.id)
+        id: createId(props.uischema.scope)
+      };
+    } else {
+      this.state = {
+        id: undefined
       };
     }
   }
 
-  isManageOwnID() {
-    return false;
+  isManageOwnID(props) {
+    return props.uischema.type === 'Control';
   }
 
   componentWillUnmount() {
-    if (this.isManageOwnID()) {
+    if (this.isManageOwnID(this.props)) {
       removeId(this.state.id);
     }
   }
@@ -61,25 +65,13 @@ class JsonFormsDispatchRenderer extends React.Component<JsonFormsProps, { id: st
       return <UnknownRenderer type={'renderer'} />;
     } else {
       const Render = renderer.renderer;
-
-      if (this.isManageOwnID()) {
-        return (
-          <Render
-            uischema={uischema}
-            schema={schema}
-            path={path}
-            renderers={renderers}
-            id={this.state.id}
-          />
-        );
-      }
-
       return (
         <Render
           uischema={uischema}
           schema={schema}
           path={path}
           renderers={renderers}
+          id={this.state.id}
         />
       );
     }

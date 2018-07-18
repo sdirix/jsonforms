@@ -37,7 +37,7 @@ import { FormControlLabel } from '@material-ui/core';
 import MaterialBooleanField from '../fields/MaterialBooleanField';
 
 export const MaterialBooleanControl =
-  ({  label, uischema, schema, visible, parentPath }: ControlProps) => {
+  ({  label, uischema, schema, visible, parentPath, id }: ControlProps) => {
     let style = {};
     if (!visible) {
       style = {display: 'none'};
@@ -47,7 +47,14 @@ export const MaterialBooleanControl =
       <FormControlLabel
         style={style}
         label={label}
-        control={<MaterialBooleanField uischema={uischema} schema={schema} path={parentPath}/>}
+        control={
+          <MaterialBooleanField
+            uischema={uischema}
+            schema={schema}
+            path={parentPath}
+            id={id}
+          />
+          }
       />
     );
   };

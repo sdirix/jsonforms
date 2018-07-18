@@ -1,7 +1,7 @@
 const usedIDs: Set<string> = new Set<string>();
 
 export const createId = (proposedID: string) => {
-  let tries = 0;
+  let tries = 1;
   while (!isUniqueId(proposedID, tries)) {
     tries++;
   }
@@ -10,13 +10,13 @@ export const createId = (proposedID: string) => {
   return newID;
 };
 
-export const removeId = uischema => usedIDs.delete(uischema);
+export const removeId = id => usedIDs.delete(id);
 
 const isUniqueId = (idBase: string, iteration: number) => {
   const newID = makeId(idBase, iteration);
   return !usedIDs.has(newID);
 };
 
-const makeId = (idBase: string, iteration: number) => idBase + iteration;
+const makeId = (idBase: string, iteration: number) => iteration <= 1 ? idBase : idBase + iteration;
 
 export const clearAllIds = () => usedIDs.clear();

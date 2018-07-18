@@ -270,10 +270,11 @@ test('mapStateToControlProps - no duplicate error messages', t => {
 test('mapStateToControlProps - id', t => {
   clearAllIds();
   const ownProps = {
-    uischema: coreUISchema
+    uischema: coreUISchema,
+    id: '#/properties/firstName'
   };
   const props = mapStateToControlProps(createState(coreUISchema), ownProps);
-  t.is(props.id, '#/properties/firstName0');
+  t.is(props.id, '#/properties/firstName');
 });
 
 test('mapDispatchToControlProps', t => {

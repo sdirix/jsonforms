@@ -214,10 +214,11 @@ test('mapStateToFieldProps - data', t => {
 test('mapStateToFieldProps - id', t => {
   clearAllIds();
   const ownProps = {
-    uischema: coreUISchema
+    uischema: coreUISchema,
+    id: '#/properties/firstName'
   };
   const props = mapStateToFieldProps(createState(coreUISchema), ownProps);
-  t.is(props.id, '#/properties/firstName0');
+  t.is(props.id, '#/properties/firstName');
 });
 
 test('mapStateToEnumFieldProps - set default options for dropdown list', t => {

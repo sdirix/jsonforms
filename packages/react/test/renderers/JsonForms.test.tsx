@@ -23,10 +23,6 @@
   THE SOFTWARE.
 */
 import 'jsdom-global/register';
-import * as installCE from 'document-register-element/pony';
-declare let global;
-installCE(global, 'force');
-global.requestAnimationFrame = cb => setTimeout(cb, 0);
 
 import * as React from 'react';
 import { test } from 'ava';
@@ -37,14 +33,19 @@ import {
   jsonformsReducer,
   JsonFormsStore,
   JsonSchema,
+  Layout,
+  rankWith,
   registerRenderer,
   RendererProps,
   UISchemaElement,
+  uiTypeIs,
   unregisterRenderer
 } from '@jsonforms/core';
 import * as TestUtils from 'react-dom/test-utils';
+import * as ReactDOM from 'react-dom';
+import { JsonForms } from '../../src/JsonForms';
+import { StatelessRenderer } from '../../src/Renderer';
 
-import { JsonForms, StatelessRenderer } from '../../src';
 /**
  * Describes the initial state of the JSON Form's store.
  */
@@ -71,11 +72,11 @@ export interface JsonFormsInitialState {
 }
 
 export const initJsonFormsStore = ({
-                                     data,
-                                     schema,
-                                     uischema,
-                                     ...props
-                                   }: JsonFormsInitialState): JsonFormsStore => {
+  data,
+  schema,
+  uischema,
+  ...props
+}: JsonFormsInitialState): JsonFormsStore => {
   return createStore(
     combineReducers({ jsonforms: jsonformsReducer() }),
     {
@@ -95,11 +96,26 @@ const CustomRenderer1: StatelessRenderer<RendererProps> = () => (<h1>test</h1>);
 const CustomRenderer2: StatelessRenderer<RendererProps> = () => (<h2>test</h2>);
 const CustomRenderer3: StatelessRenderer<RendererProps> = () => (<h3>test</h3>);
 
+const container = document.createElement('div');
+
 test.beforeEach(t => {
   t.context.data = { foo: 'John Doe' };
   t.context.uischema = {
     type: 'Control',
     scope: '#/properties/foo'
+  };
+  t.context.uischema2 = {
+    type: 'HorizontalLayout',
+    elements: [
+      {
+        type: 'Control',
+        scope: '#/properties/foo'
+      },
+      {
+        type: 'Control',
+        scope: '#/properties/foo'
+      }
+    ]
   };
   t.context.schema = {
     type: 'object',
@@ -111,23 +127,30 @@ test.beforeEach(t => {
   };
 });
 
+test.afterEach(() => {
+  ReactDOM.unmountComponentAtNode(container);
+});
+
 test('JsonForms renderer should report about missing renderer', t => {
   const data = { foo: 'John Doe' };
   const uischema = { type: 'Foo' };
-  const schema: JsonSchema = { type: 'object', properties: { foo: { type: 'string'} } };
+  const schema: JsonSchema = { type: 'object', properties: { foo: { type: 'string' } } };
   const store = initJsonFormsStore({
     data,
     schema,
     uischema
   });
 
+  const component = (
+    <Provider store={store}>
+      <JsonForms uischema={uischema} schema={schema} />
+    </Provider>
+  );
+  const tree = ReactDOM.render(component, container);
+
   const div = _.head(
     TestUtils.scryRenderedDOMComponentsWithTag(
-      TestUtils.renderIntoDocument(
-        <Provider store={store}>
-          <JsonForms uischema={uischema} schema={schema} />
-        </Provider>
-      ),
+      tree,
       'div'
     )
   ) as HTMLDivElement;
@@ -142,11 +165,12 @@ test('JsonForms renderer should pick most applicable renderer', t => {
   });
   store.dispatch(registerRenderer(() => 10, CustomRenderer1));
   store.dispatch(registerRenderer(() => 5, CustomRenderer1));
-  const tree = TestUtils.renderIntoDocument(
+  const component = (
     <Provider store={store}>
       <JsonForms uischema={t.context.uischema} schema={t.context.schema} />
     </Provider>
   );
+  const tree = ReactDOM.render(component, container);
 
   t.not(TestUtils.findRenderedDOMComponentWithTag(tree, 'h1'), undefined);
 });
@@ -164,11 +188,12 @@ test('JsonForms renderer should not consider any de-registered renderers', t => 
   store.dispatch(registerRenderer(tester2, CustomRenderer2));
   store.dispatch(registerRenderer(tester3, CustomRenderer3));
   store.dispatch(unregisterRenderer(tester3, CustomRenderer2));
-  const tree = TestUtils.renderIntoDocument(
-  <Provider store={store}>
-    <JsonForms uischema={t.context.uischema} schema={t.context.schema}/>
-  </Provider>
-);
+  const component = (
+    <Provider store={store}>
+      <JsonForms uischema={t.context.uischema} schema={t.context.schema} />
+    </Provider>
+  );
+  const tree = ReactDOM.render(component, container);
 
   t.not(TestUtils.findRenderedDOMComponentWithTag(tree, 'h1'), undefined);
 });
@@ -185,4 +210,62 @@ test('deregister an unregistered renderer should be a no-op', t => {
   const nrOfRenderers = store.getState().jsonforms.renderers.length;
   store.dispatch(unregisterRenderer(tester, CustomRenderer3));
   t.is(store.getState().jsonforms.renderers.length, nrOfRenderers);
+});
+
+test('ids should be unique within the same form', t => {
+
+  const FakeLayout = (props: RendererProps) => {
+    const { uischema, schema, path } = props;
+    const layout = uischema as Layout;
+    const children = layout.elements.map((e, idx) => (
+      <JsonForms
+        uischema={e}
+        schema={schema}
+        path={path}
+        key={`${path}-${idx}`}
+      />)
+    );
+    return (
+      <div className='layout'>
+        {children}
+      </div>
+    );
+  };
+
+  const store = initJsonFormsStore(
+    {
+      data: t.context.data,
+      schema: t.context.schema,
+      uischema: t.context.uischema2,
+      renderers: [{
+        tester: rankWith(10, uiTypeIs('HorizontalLayout')),
+        renderer: FakeLayout
+      }]
+    }
+  );
+
+  const ids = [];
+  const MyCustomRenderer: StatelessRenderer<any> = props => {
+    ids.push(props.id);
+    return (<div>Custom</div>);
+  };
+  store.dispatch(registerRenderer(() => 10, MyCustomRenderer));
+
+  ReactDOM.render(
+    <Provider store={store}>
+      <JsonForms uischema={t.context.uischema2} schema={t.context.schema} />
+    </Provider>,
+    container
+  );
+
+  t.is(
+    ids.indexOf('#/properties/foo') > -1,
+    true,
+    'Generated DOM should contain id: ' + '#/properties/foo'
+  );
+  t.is(
+    ids.indexOf('#/properties/foo2') > -1,
+    true,
+    'Generated DOM should contain id: ' + '#/properties/foo2'
+  );
 });
