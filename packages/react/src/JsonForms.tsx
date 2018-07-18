@@ -27,6 +27,7 @@ import * as _ from 'lodash';
 import { connect } from 'react-redux';
 import { UnknownRenderer } from './UnknownRenderer';
 import {
+  createId,
   JsonFormsProps,
   mapStateToDispatchRendererProps,
   removeId
@@ -36,14 +37,20 @@ class JsonFormsDispatchRenderer extends React.Component<JsonFormsProps, { id: st
 
   constructor(props) {
     super(props);
-    this.state = {
-      id: props.id
-    };
+    if (this.isManageOwnID()) {
+      this.state = {
+        id: createId(props.id)
+      };
+    }
+  }
+
+  isManageOwnID() {
+    return false;
   }
 
   componentWillUnmount() {
-    if (this.state.id) {
-      removeId(this.props.uischema);
+    if (this.isManageOwnID()) {
+      removeId(this.state.id);
     }
   }
 
@@ -55,7 +62,7 @@ class JsonFormsDispatchRenderer extends React.Component<JsonFormsProps, { id: st
     } else {
       const Render = renderer.renderer;
 
-      if (uischema.type !== undefined && uischema.type === 'Control') {
+      if (this.isManageOwnID()) {
         return (
           <Render
             uischema={uischema}

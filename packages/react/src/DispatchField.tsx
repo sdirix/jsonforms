@@ -26,28 +26,14 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 import { UnknownRenderer } from './UnknownRenderer';
-import { DispatchFieldProps, mapStateToDispatchFieldProps, removeId } from '@jsonforms/core';
+import { DispatchFieldProps, mapStateToDispatchFieldProps } from '@jsonforms/core';
 
 /**
  * Dispatch renderer component for fields.
  */
-class Dispatch extends React.Component<DispatchFieldProps, { id: string }> {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      id: props.id
-    };
-  }
-
-  componentWillUnmount() {
-    if (this.state.id) {
-      removeId(this.props.uischema);
-    }
-  }
-
+class Dispatch extends React.Component<DispatchFieldProps> {
   render() {
-    const { uischema, schema, path, fields } = this.props as DispatchFieldProps;
+    const { uischema, schema, path, fields, id } = this.props as DispatchFieldProps;
     const field = _.maxBy(fields, r => r.tester(uischema, schema));
 
     if (field === undefined || field.tester(uischema, schema) === -1) {
@@ -55,22 +41,12 @@ class Dispatch extends React.Component<DispatchFieldProps, { id: string }> {
     } else {
       const Field = field.field;
 
-      if (uischema.type !== undefined && uischema.type === 'Control') {
-        return (
-          <Field
-            uischema={uischema}
-            schema={schema}
-            path={path}
-            id={this.state.id}
-          />
-        );
-      }
-
       return (
         <Field
-          schema={schema}
           uischema={uischema}
+          schema={schema}
           path={path}
+          id={id}
         />
       );
     }
