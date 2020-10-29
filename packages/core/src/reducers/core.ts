@@ -256,10 +256,12 @@ export const coreReducer = (
       const v = needsNewValidator
         ? reuseAjvForSchema(state.ajv, action.schema).compile(action.schema)
         : state.validator;
+      const errors = sanitizeErrors(v, state.data);
       return {
         ...state,
         validator: v,
-        schema: action.schema
+        schema: action.schema,
+        errors
       };
     }
     case SET_UISCHEMA: {
