@@ -40,7 +40,9 @@ import {
   UPDATE_DATA,
   UPDATE_ERRORS,
   CoreActions,
-  SET_VALIDATION_MODE
+  SET_VALIDATION_MODE,
+  UPDATE_CORE,
+  UpdateCoreAction
 } from '../actions';
 import { createAjv } from '../util/validator';
 import { JsonSchema, UISchemaElement } from '..';
@@ -98,7 +100,7 @@ const reuseAjvForSchema = (ajv: Ajv, schema: JsonSchema): Ajv => {
   return ajv;
 };
 
-const getOrCreateAjv = (state: JsonFormsCore, action?: InitAction): Ajv => {
+const getOrCreateAjv = (state: JsonFormsCore, action?: InitAction | UpdateCoreAction): Ajv => {
   if (action) {
     if (hasAjvOption(action.options)) {
       // options object with ajv
@@ -123,7 +125,7 @@ const getOrCreateAjv = (state: JsonFormsCore, action?: InitAction): Ajv => {
 
 const getRefParserOptions = (
   state: JsonFormsCore,
-  action?: InitAction
+  action?: InitAction | UpdateCoreAction
 ): RefParser.Options => {
   if (action && hasRefParserOption(action.options)) {
     return action.options.refParserOptions;
@@ -147,7 +149,7 @@ const hasAjvOption = (option: any): option is InitActionOptions => {
 
 const getValidationMode = (
   state: JsonFormsCore,
-  action?: InitAction
+  action?: InitAction | UpdateCoreAction
 ): ValidationMode => {
   if (action && hasValidationModeOption(action.options)) {
     return action.options.validationMode;
@@ -162,6 +164,7 @@ const hasValidationModeOption = (option: any): option is InitActionOptions => {
   return false;
 };
 
+// tslint:disable-next-line: cyclomatic-complexity
 export const coreReducer = (
   state: JsonFormsCore = initState,
   action: CoreActions
@@ -172,7 +175,10 @@ export const coreReducer = (
       const o = getRefParserOptions(state, action);
 
       const validationMode = getValidationMode(state, action);
-      const v = validationMode === 'NoValidation' ? alwaysValid : thisAjv.compile(action.schema);
+      const v =
+        validationMode === 'NoValidation'
+          ? alwaysValid
+          : thisAjv.compile(action.schema);
       const e = sanitizeErrors(v, action.data);
 
       return {
@@ -187,9 +193,56 @@ export const coreReducer = (
         validationMode
       };
     }
+    case UPDATE_CORE: {
+      const thisAjv = getOrCreateAjv(state, action);
+      const refParserOptions = getRefParserOptions(state, action);
+      const validationMode = getValidationMode(state, action);
+      let validator = state.validator;
+      let errors = state.errors;
+      if (
+        state.schema !== action.schema ||
+        state.validationMode !== validationMode ||
+        state.ajv !== thisAjv
+      ) {
+        // revalidate only if necessary
+        validator =
+          validationMode === 'NoValidation'
+            ? alwaysValid
+            : thisAjv.compile(action.schema);
+        errors = sanitizeErrors(validator, action.data);
+      } else if (state.data !== action.data) {
+        errors = sanitizeErrors(validator, action.data);
+      }
+
+      const stateChanged =
+        state.data !== action.data ||
+        state.schema !== action.schema ||
+        state.uischema !== action.uischema ||
+        state.ajv !== thisAjv ||
+        state.errors !== errors ||
+        state.validator !== validator ||
+        state.refParserOptions !== refParserOptions ||
+        state.validationMode !== validationMode;
+      return stateChanged
+        ? {
+            ...state,
+            data: state.data === action.data ? state.data : action.data,
+            schema: state.schema === action.schema ? state.schema : action.schema,
+            uischema: state.uischema === action.uischema ? state.uischema : action.uischema,
+            ajv: thisAjv === state.ajv ? state.ajv : thisAjv,
+            errors: errors === state.errors ? state.errors : errors,
+            validator: validator === state.validator ? state.validator : validator,
+            refParserOptions: refParserOptions === state.refParserOptions ? state.refParserOptions : refParserOptions,
+            validationMode: validationMode === state.validationMode ? state.validationMode : validationMode
+          }
+        : state;
+    }
     case SET_AJV: {
       const currentAjv = action.ajv;
-      const validator = state.validationMode === 'NoValidation' ? alwaysValid : currentAjv.compile(state.schema);
+      const validator =
+        state.validationMode === 'NoValidation'
+          ? alwaysValid
+          : currentAjv.compile(state.schema);
       const errors = sanitizeErrors(validator, state.data);
       return {
         ...state,
@@ -198,7 +251,8 @@ export const coreReducer = (
       };
     }
     case SET_SCHEMA: {
-      const needsNewValidator = action.schema && state.ajv && state.validationMode !== 'NoValidation';
+      const needsNewValidator =
+        action.schema && state.ajv && state.validationMode !== 'NoValidation';
       const v = needsNewValidator
         ? reuseAjvForSchema(state.ajv, action.schema).compile(action.schema)
         : state.validator;
