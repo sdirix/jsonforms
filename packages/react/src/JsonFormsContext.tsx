@@ -68,7 +68,7 @@ import {
   mapStateToOneOfEnumControlProps,
   update
 } from '@jsonforms/core';
-import React, { ComponentType, Dispatch, ReducerAction, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
+import React, { ComponentType, Dispatch, ReducerAction, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 
 import { connect } from 'react-redux';
 import get from 'lodash/get';
@@ -138,18 +138,20 @@ export const JsonFormsStateProvider = ({ children, initState }: any) => {
     configDispatch(Actions.setConfig(initState.config));
   }, [initState.config]);
 
+  const contextValue = useMemo(() => ({
+    core,
+    renderers: initState.renderers,
+    cells: initState.cells,
+    config: config,
+        uischemas: initState.uischemas,
+    readonly: initState.readonly,
+    // only core dispatch available
+    dispatch: coreDispatch,
+  }), [core, initState.renderers, initState.cells, config, initState.readonly]);
+
   return (
     <JsonFormsContext.Provider
-      value={{
-        core,
-        renderers: initState.renderers,
-        cells: initState.cells,
-        config: config,
-        uischemas: initState.uischemas,
-        readonly: initState.readonly,
-        // only core dispatch available
-        dispatch: coreDispatch,
-      }}
+      value={contextValue}
     >
       {children}
     </JsonFormsContext.Provider>
