@@ -226,7 +226,7 @@ export interface JsonFormsInitStateProps {
   validationMode?: ValidationMode;
 }
 
-export const JsonForms = (
+export const JsonForms = React.memo((
   props: JsonFormsInitStateProps & JsonFormsReactProps
 ) => {
   const {
@@ -274,4 +274,4 @@ export const JsonForms = (
       <JsonFormsDispatch onChange={onChange} />
     </JsonFormsStateProvider>
   );
-};
+});
