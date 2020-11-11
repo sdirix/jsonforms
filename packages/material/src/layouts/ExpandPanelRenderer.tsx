@@ -3,7 +3,6 @@ import get from 'lodash/get';
 import React, { Dispatch, Fragment, ReducerAction, useMemo, useState } from 'react';
 import { ComponentType } from 'enzyme';
 import {
-  areEqual,
   ResolvedJsonFormsDispatch,
   JsonFormsStateContext,
   withJsonFormsContext
@@ -287,9 +286,7 @@ export const withJsonFormsExpandPanelProps = (
   withJsonFormsContext(
     withContextToExpandPanelProps(
       React.memo(
-        Component,
-        (prevProps: ExpandPanelProps, nextProps: ExpandPanelProps) =>
-          areEqual(prevProps, nextProps)
+        Component
       )
     )
   );

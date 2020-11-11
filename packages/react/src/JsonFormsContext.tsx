@@ -66,6 +66,7 @@ import {
   mapStateToMasterListItemProps,
   mapStateToOneOfProps,
   mapStateToOneOfEnumControlProps,
+  mutableCoreReducer,
   update
 } from '@jsonforms/core';
 import React, { ComponentType, Dispatch, ReducerAction, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
@@ -74,6 +75,7 @@ import { connect } from 'react-redux';
 import get from 'lodash/get';
 import isEqual from 'lodash/isEqual';
 import omit from 'lodash/omit';
+import cloneDeep from 'lodash/cloneDeep';
 
 const initialCoreState: JsonFormsCore = {
   data: {},
@@ -113,19 +115,20 @@ const useEffectAfterFirstRender = (
 };
 
 export const JsonFormsStateProvider = ({ children, initState, onChange }: any) => {
+  const lastEmittedData = useRef();
   const { data, schema, uischema, ajv, refParserOptions , validationMode} = initState.core;
-  // Initialize core immediately
   const [core, coreDispatch] = useReducer(
-    coreReducer,
+    mutableCoreReducer,
     undefined,
-    () => coreReducer(
+    () => mutableCoreReducer(
       initState.core,
       Actions.init(data, schema, uischema, { ajv, refParserOptions, validationMode })
     )
   );
   useEffect(() => {
+    const dataToUse = data === lastEmittedData.current ? core.data : data;
     coreDispatch(
-      Actions.updateCore(data, schema, uischema, { ajv, refParserOptions, validationMode })
+      Actions.updateCore(dataToUse, schema, uischema, { ajv, refParserOptions, validationMode })
     );
   }, [data, schema, uischema, ajv, refParserOptions, validationMode]);
 
@@ -145,7 +148,6 @@ export const JsonFormsStateProvider = ({ children, initState, onChange }: any) =
     config: config,
         uischemas: initState.uischemas,
     readonly: initState.readonly,
-    // only core dispatch available
     dispatch: coreDispatch,
   }), [core, initState.renderers, initState.cells, config, initState.readonly]);
 
@@ -154,8 +156,9 @@ export const JsonFormsStateProvider = ({ children, initState, onChange }: any) =
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  useEffect(() => {
-    onChangeRef.current?.({ data: core.data, errors: core.errors });
+  useEffectAfterFirstRender(() => {
+    lastEmittedData.current = cloneDeep(core.data);
+    onChangeRef.current?.({ data: lastEmittedData.current, errors: cloneDeep(core.errors) });
   }, [core.data, core.errors]);
 
   return (
@@ -427,6 +430,10 @@ const withContextToOneOfEnumProps =
 
 type JsonFormsPropTypes = ControlProps | CombinatorProps | LayoutProps | CellProps | ArrayLayoutProps | StatePropsOfControlWithDetail | OwnPropsOfRenderer;
 
+/**
+ * @deprecated This compare function is no longer in use. We recommend (and is configured by default when not using the Redux variant of JSON Forms) mutable
+ * updates which allow to shallow compare all props.
+ */
 export const areEqual = (prevProps: JsonFormsPropTypes, nextProps: JsonFormsPropTypes) => {
   const prev = omit(prevProps, ['schema', 'uischema', 'handleChange', 'renderers', 'cells', 'uischemas']);
   const next = omit(nextProps, ['schema', 'uischema', 'handleChange', 'renderers', 'cells', 'uischemas']);
@@ -443,72 +450,61 @@ export const areEqual = (prevProps: JsonFormsPropTypes, nextProps: JsonFormsProp
 export const withJsonFormsControlProps =
   (Component: ComponentType<ControlProps>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToControlProps(React.memo(
-      Component,
-      (prevProps: ControlProps, nextProps: ControlProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsLayoutProps =
   (Component: ComponentType<LayoutProps>): ComponentType<OwnPropsOfLayout> =>
     withJsonFormsContext(withContextToLayoutProps(React.memo(
-      Component,
-      (prevProps: LayoutProps, nextProps: LayoutProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsOneOfProps =
   (Component: ComponentType<CombinatorProps>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToOneOfProps(React.memo(
-      Component,
-      (prevProps: CombinatorProps, nextProps: CombinatorProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsAnyOfProps =
   (Component: ComponentType<CombinatorProps>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToAnyOfProps(React.memo(
-      Component,
-      (prevProps: CombinatorProps, nextProps: CombinatorProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsAllOfProps =
   (Component: ComponentType<StatePropsOfCombinator>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToAllOfProps(React.memo(
-      Component,
-      (prevProps: CombinatorProps, nextProps: CombinatorProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsDetailProps =
   (Component: ComponentType<StatePropsOfControlWithDetail>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToDetailProps(React.memo(
-      Component,
-      (prevProps: StatePropsOfControlWithDetail, nextProps: StatePropsOfControlWithDetail) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsArrayLayoutProps =
   (Component: ComponentType<ArrayLayoutProps>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToArrayLayoutProps(React.memo(
-      Component,
-      (prevProps: ArrayLayoutProps, nextProps: ArrayLayoutProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsArrayControlProps =
   (Component: ComponentType<ArrayControlProps>): ComponentType<OwnPropsOfControl> =>
     withJsonFormsContext(withContextToArrayControlProps(React.memo(
-      Component,
-      (prevProps: ArrayControlProps, nextProps: ArrayControlProps) => areEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsMasterListItemProps =
   (Component: ComponentType<StatePropsOfMasterItem>): ComponentType<OwnPropsOfMasterListItem> =>
     withJsonFormsContext(withContextToMasterListItemProps(React.memo(
-      Component,
-      (prevProps: StatePropsOfMasterItem, nextProps: StatePropsOfMasterItem) =>
-        isEqual(omit(prevProps, ['handleSelect', 'removeItem']), omit(nextProps, ['handleSelect', 'removeItem']))
+      Component
     )));
 
 export const withJsonFormsCellProps =
   (Component: ComponentType<CellProps>): ComponentType<OwnPropsOfCell> =>
     withJsonFormsContext(withContextToCellProps(React.memo(
-      Component,
-      (prevProps: CellProps, nextProps: CellProps) => isEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsDispatchCellProps = (
@@ -516,30 +512,25 @@ export const withJsonFormsDispatchCellProps = (
 ): ComponentType<OwnPropsOfCell> =>
   withJsonFormsContext(
     withContextToDispatchCellProps(
-      React.memo(Component, (prevProps: DispatchCellProps, nextProps: DispatchCellProps) =>
-        isEqual(prevProps, nextProps)
-      )
+      React.memo(Component)
     )
   );
 
 export const withJsonFormsEnumCellProps =
   (Component: ComponentType<EnumCellProps>): ComponentType<OwnPropsOfEnumCell> =>
     withJsonFormsContext(withContextToEnumCellProps(React.memo(
-      Component,
-      (prevProps: EnumCellProps, nextProps: EnumCellProps) => isEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsEnumProps =
   (Component: ComponentType<ControlProps & OwnPropsOfEnum>): ComponentType<OwnPropsOfControl & OwnPropsOfEnum> =>
     withJsonFormsContext(withContextToEnumProps(React.memo(
-      Component,
-      (prevProps: ControlProps & OwnPropsOfEnum, nextProps: ControlProps & OwnPropsOfEnum) => isEqual(prevProps, nextProps)
+      Component
     )));
 
 export const withJsonFormsOneOfEnumProps =
   (Component: ComponentType<ControlProps & OwnPropsOfEnum>): ComponentType<OwnPropsOfControl & OwnPropsOfEnum> =>
     withJsonFormsContext(withContextToOneOfEnumProps(React.memo(
-      Component,
-      (prevProps: ControlProps & OwnPropsOfEnum, nextProps: ControlProps & OwnPropsOfEnum) => isEqual(prevProps, nextProps)
+      Component
     )));
 // --

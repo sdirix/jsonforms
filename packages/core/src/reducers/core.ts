@@ -46,6 +46,7 @@ import {
 } from '../actions';
 import { createAjv } from '../util/validator';
 import { JsonSchema, UISchemaElement } from '..';
+import { Action, Reducer } from 'redux';
 
 const validate = (validator: ValidateFunction, data: any): ErrorObject[] => {
   const valid = validator(data);
@@ -164,13 +165,21 @@ const hasValidationModeOption = (option: any): option is InitActionOptions => {
   return false;
 };
 
+export const mutableCoreReducer: Reducer<JsonFormsCore, CoreActions> =
+  (state: JsonFormsCore, action: CoreActions) => coreReducer(state, action, false);
+
+export interface ConfigurableReducer<S, A extends Action> extends Reducer<S, A> {
+  (state: S, action: A, mutableUpdates: boolean): S;
+};
 // tslint:disable-next-line: cyclomatic-complexity
-export const coreReducer = (
+export const coreReducer : ConfigurableReducer<JsonFormsCore, CoreActions> = (
   state: JsonFormsCore = initState,
-  action: CoreActions
+  action: CoreActions,
+  mutableUpdates: boolean = false
 ): JsonFormsCore => {
   switch (action.type) {
     case INIT: {
+      const data = cloneDeep(action.data);
       const thisAjv = getOrCreateAjv(state, action);
       const o = getRefParserOptions(state, action);
 
@@ -179,11 +188,11 @@ export const coreReducer = (
         validationMode === 'NoValidation'
           ? alwaysValid
           : thisAjv.compile(action.schema);
-      const e = sanitizeErrors(v, action.data);
+      const e = sanitizeErrors(v, data);
 
       return {
         ...state,
-        data: action.data,
+        data: data,
         schema: action.schema,
         uischema: action.uischema,
         errors: e,
@@ -275,24 +284,26 @@ export const coreReducer = (
         return state;
       } else if (action.path === '') {
         // empty path is ok
-        const result = action.updater(cloneDeep(state.data));
-
-        const errors = sanitizeErrors(state.validator, result);
+        const data = mutableUpdates ? { ...state.data} : cloneDeep(state.data);
+        const newData = action.updater(data);
+        const errors = sanitizeErrors(state.validator, newData);
 
         return {
           ...state,
-          data: result,
+          data: newData,
           errors
         };
       } else {
-        const oldData: any = get(state.data, action.path);
-        const newData = action.updater(cloneDeep(oldData));
-        const newState: any = set(state.data === undefined ? {} : cloneDeep(state.data), action.path, newData);
-        const errors = sanitizeErrors(state.validator, newState);
+        const previousDataAtPath = get(state.data, action.path);
+        const dataAtPath = mutableUpdates ? previousDataAtPath : cloneDeep(previousDataAtPath);
+        const newDataAtPath = action.updater(dataAtPath);
+        const data = mutableUpdates || state.data === undefined ? {...state.data} : cloneDeep(state.data);
+        const newData = set(data, action.path, newDataAtPath);
+        const errors = sanitizeErrors(state.validator, newData);
 
         return {
           ...state,
-          data: newState,
+          data: newData,
           errors
         };
       }

@@ -22,7 +22,6 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import isEqual from 'lodash/isEqual';
 import maxBy from 'lodash/maxBy';
 import memoize from 'lodash/memoize';
 import React, { useMemo } from 'react';
@@ -81,7 +80,7 @@ export class ResolvedJsonFormsDispatchRenderer extends React.Component<
     nextProps: JsonFormsProps,
     prevState: JsonFormsRendererState
   ) {
-    if (!isEqual(prevState.schema, nextProps.schema)) {
+    if (prevState.schema !== nextProps.schema) {
       const schemaHasRefs: boolean = hasRefs(nextProps.schema);
       const newState: JsonFormsRendererState = {
         id: prevState.id,

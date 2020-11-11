@@ -34,7 +34,8 @@ import {
   extractSchema,
   extractUiSchema,
   subErrorsAt,
-  ValidationMode
+  ValidationMode,
+  mutableCoreReducer
 } from './core';
 import {
   JsonFormsDefaultDataRegistryEntry,
@@ -71,6 +72,7 @@ export {
   rendererReducer,
   cellReducer,
   coreReducer,
+  mutableCoreReducer,
   i18nReducer,
   configReducer,
   UISchemaTester,

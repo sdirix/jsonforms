@@ -25,7 +25,6 @@
 import React from 'react';
 import { CellProps, Formatted, WithClassname } from '@jsonforms/core';
 import Input from '@material-ui/core/Input';
-import { areEqual } from '@jsonforms/react';
 import merge from 'lodash/merge';
 
 export const MuiInputNumberFormat = React.memo(
@@ -71,6 +70,5 @@ export const MuiInputNumberFormat = React.memo(
         error={!isValid}
       />
     );
-  },
-  areEqual
+  }
 );

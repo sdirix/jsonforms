@@ -34,7 +34,7 @@ import {
   OwnPropsOfRenderer,
   UISchemaElement
 } from '@jsonforms/core';
-import { areEqual, ResolvedJsonFormsDispatch, useJsonForms } from '@jsonforms/react';
+import { ResolvedJsonFormsDispatch, useJsonForms } from '@jsonforms/react';
 import { Grid, Hidden } from '@material-ui/core';
 
 export const renderLayoutElements = (
@@ -96,8 +96,7 @@ export const MaterialLayoutRenderer = React.memo(
         </Hidden>
       );
     }
-  },
-  areEqual
+  }
 );
 
 export interface AjvProps {

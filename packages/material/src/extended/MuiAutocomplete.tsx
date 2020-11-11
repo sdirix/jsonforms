@@ -27,7 +27,6 @@ import { EnumCellProps, EnumOption, WithClassname } from '@jsonforms/core';
 
 import Input from '@material-ui/core/Input';
 import Autocomplete, { AutocompleteRenderOptionState } from '@material-ui/lab/Autocomplete';
-import { areEqual } from '@jsonforms/react';
 import merge from 'lodash/merge';
 import { FilterOptionsState } from '@material-ui/lab/useAutocomplete';
 
@@ -90,4 +89,4 @@ export const MuiAutocomplete = React.memo((props: EnumCellProps & WithClassname 
       filterOptions={filterOptions}
     />
   );
-}, areEqual);
+});

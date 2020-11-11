@@ -25,7 +25,6 @@
 import React from 'react';
 import { CellProps, WithClassname } from '@jsonforms/core';
 import Input from '@material-ui/core/Input';
-import { areEqual } from '@jsonforms/react';
 import merge from 'lodash/merge';
 
 export const MuiInputNumber = React.memo((props: CellProps & WithClassname) => {
@@ -57,4 +56,4 @@ export const MuiInputNumber = React.memo((props: CellProps & WithClassname) => {
       fullWidth={true}
     />
   );
-}, areEqual);
+});
