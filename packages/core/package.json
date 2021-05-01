@@ -29,10 +29,12 @@
     "layout",
     "customization"
   ],
-  "main": "./lib/index.js",
+  "main": "lib/jsonforms-core.cjs.js",
+  "module": "lib/jsonforms-core.esm.js",
+  "unpkg": "lib/jsonforms-core.umd.js",
   "typings": "./lib/index.d.ts",
   "scripts": {
-    "bundle": "webpack --config ./webpack.build.js --env=production --display-error-details",
+    "bundle": "rollup -c rollup.config.js",
     "build": "tsc",
     "clean": "rimraf -rf lib coverage dist .nyc_output 2> /dev/null",
     "lint": "tslint --project tsconfig.json --exclude src/models/jsonSchema.ts",
@@ -61,7 +63,6 @@
     ]
   },
   "dependencies": {
-    "@types/json-schema": "^7.0.3",
     "ajv": "^6.10.2",
     "json-schema-ref-parser": "7.1.3",
     "lodash": "^4.17.15",
@@ -69,6 +70,7 @@
     "uuid": "^3.3.3"
   },
   "devDependencies": {
+    "@types/json-schema": "^7.0.3",
     "@istanbuljs/nyc-config-typescript": "0.1.3",
     "@types/redux-mock-store": "^1.0.1",
     "ava": "~2.4.0",
@@ -79,6 +81,15 @@
     "redux": "^4.0.4",
     "redux-mock-store": "1.5.3",
     "rimraf": "^3.0.2",
+    "rollup": "^2.7.3",
+    "rollup-plugin-typescript2": "^0.29.0",
+    "rollup-plugin-peer-deps-external":"^2.2.4",
+    "@rollup/plugin-commonjs": "^18.0.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "rollup-plugin-visualizer": "^5.4.1",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-terser": "^7.0.2",
     "source-map-support": "0.5.16",
     "ts-node": "^8.5.3",
     "tslint": "^5.20.1",
