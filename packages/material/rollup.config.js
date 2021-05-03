@@ -12,7 +12,17 @@ export default [
   // slim builds without any dependencies included
   {
     input: 'src/index.ts',
-    external: ['ajv', 'json-schema-ref-parser', /lodash.*/, 'uri-js', 'uuid'],
+    external: [
+      '@date-io/moment',
+      '@material-ui/pickers',
+      'moment',
+      'uuid',
+      '@jsonforms/core',
+      '@jsonforms/react',
+      '@material-ui/core',
+      '@material-ui/icons',
+      '@material-ui/lab'
+    ],
     output: [
       {
         file: packageJson.main,
@@ -32,15 +42,20 @@ export default [
       typescript({ useTsconfigDeclarationDir: true })
     ]
   },
-  // full build containing all dependencies
+  // full build containing all dependencies except JSON FOrms
   {
     input: 'src/index.ts',
+    external: ['@jsonforms/core', 'react'],
     output: [
       {
         file: packageJson.unpkg,
         format: 'umd',
         sourcemap: true,
-        name: 'JSONFormsCore'
+        name: 'JSONFormsReact',
+        globals: {
+          react: 'React',
+          '@jsonforms/core': 'JSONFormsCore'
+        }
       }
     ],
     plugins: [

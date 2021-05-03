@@ -28,10 +28,12 @@
     "layout",
     "customization"
   ],
-  "main": "lib/index.js",
+  "main": "lib/jsonforms-react.cjs.js",
+  "module": "lib/jsonforms-react.esm.js",
+  "unpkg": "lib/jsonforms-react.umd.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "bundle": "webpack --config ./webpack/webpack.build.js --env=production --display-error-details",
+    "bundle": "rollup -c",
     "build": "tsc",
     "dev": "webpack --config webpack/webpack.dev.js && webpack-dev-server --config webpack/webpack.dev.js --env=dev --inline",
     "clean": "rimraf lib coverage dist .nyc_output 2> /dev/null",
