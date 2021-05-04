@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "lib": ["es6", "dom"],
     "module": "es6",
-    "target": "ES5",
+    "target": "es6",
     "moduleResolution": "node",
     "jsx": "react",
     "noUnusedParameters": true,

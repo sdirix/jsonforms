@@ -13,19 +13,7 @@ export default [
   {
     input: './src/index.ts',
     external: [
-      '@date-io/moment',
-      '@material-ui/pickers',
-      'moment',
-      'uuid',
-      '@jsonforms/core',
-      '@jsonforms/react',
-      '@material-ui/core',
-      '@material-ui/icons',
-      '@material-ui/lab',
-      /@material-ui.*/,
-      'react',
-      'react-dom',
-      /lodash.*/
+      'ajv-i18n', '@jsonforms/core', 'moment'
     ],
     output: [
       // {

@@ -29,7 +29,8 @@ export default [
       json(),
       resolve(),
       commonjs(),
-      typescript({ useTsconfigDeclarationDir: true })
+      typescript({ useTsconfigDeclarationDir: true }),
+      visualizer()
     ]
   },
   // full build containing all dependencies
@@ -50,7 +51,7 @@ export default [
       commonjs(),
       typescript({ useTsconfigDeclarationDir: true }),
       terser(),
-      visualizer()
+  //    visualizer()
     ]
   }
 ];
